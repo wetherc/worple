@@ -1,4 +1,4 @@
-# Wordle Clone
+# Worple, a dumb Wordle clone
 
 This is a simple clone of the popular word game Wordle.
 
@@ -12,4 +12,9 @@ This is a simple clone of the popular word game Wordle.
     -   **Yellow:** The letter is in the word but in the wrong spot.
     -   **Gray:** The letter is not in the word in any spot.
 
-## Have Fun!
+## Source dictionary
+
+The `words.json.gz` array comes from Donald Knuth's GraphBase list of five-letter words[1]
+
+
+[1] — Knuth, Donald. The Stanford GraphBase: A Platform for Combinatorial Computing. New York: ACM Press, 1994. <http://www-cs-faculty.stanford.edu/~knuth/sgb.html>
