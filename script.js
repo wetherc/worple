@@ -369,8 +369,7 @@ function displayStats() {
         <div class="histogram-container">
             ${[1, 2, 3, 4, 5, 6, "Fail"].map(num => {
                 const count = num === "Fail" ? stats.guesses.fail : stats.guesses[num];
-                const maxCount = Math.max(...Object.values(stats.guesses).filter(v => typeof v === 'number'));
-                const percentage = maxCount > 0 ? (count / maxCount) * 100 : 0;
+                const percentage = stats.gamesPlayed > 0 ? (count / stats.gamesPlayed) * 100 : 0;
                 return `
                     <div class="histogram-row">
                         <div class="histogram-label">${num}</div>
