@@ -340,7 +340,8 @@ function registerModalDismissalEvents() {
 
     // Dismissal by Escape key
     document.addEventListener("keydown", (e) => {
-        if ((e.key === "Escape" || e.key === "Enter") && modalContainer.style.display === "flex") {
+        const playAgainButton = document.getElementById("play-again-button");
+        if ((e.key === "Escape" || e.key === "Enter") && modalContainer.style.display === "flex" && playAgainButton.style.display !== "none") {
             hideModal();
         }
     });
