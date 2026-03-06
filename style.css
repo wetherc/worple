@@ -100,7 +100,6 @@ h1 {
     background-color: rgba(0, 0, 0, 0.5);
     justify-content: center; /* Keep horizontal centering for the modal content */
     align-items: flex-start; /* Align modal content to the top */
-    padding-top: 25vh; /* Space from the top */
     opacity: 0;
     transition: opacity 0.3s ease;
 }
@@ -114,10 +113,10 @@ h1 {
     padding: 20px;
     border-radius: 10px;
     text-align: center;
-    transform: translateY(-100%); /* Start above the viewport */
-    transition: transform 0.3s ease-out;
-    margin-top: -25vh; /* Adjust based on padding-top of container */
     position: relative; /* Needed for transform */
+    top: 25%; /* Position 25% down the screen */
+    transform: translateY(-150%); /* Start further above to ensure it drops in */
+    transition: transform 0.3s ease-out;
 }
 
 #modal-container.modal-show #modal {
