@@ -10,6 +10,8 @@ body {
     background-color: #121213;
     color: white;
     min-height: 100vh;
+    /*position: relative;*/
+    overflow-x: hidden;
 }
 
 h1 {
@@ -181,6 +183,7 @@ h1 {
     gap: 20px;
     width: 100%;
     padding: 20px;
+    margin-top: 20px;
 }
 
 .game-container {
@@ -297,6 +300,7 @@ h1 {
 }
 .difficulty-selection {
     margin-bottom: 20px;
+    margin-top: 45px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -374,6 +378,50 @@ h1 {
 #temporary-message-container.show {
     opacity: 1;
     visibility: visible;
+}
+
+.github-link {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+.github-link a {
+    display: block;
+    width: 90px;
+    height: 90px;
+    text-align: center;
+}
+
+.github-link svg {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 50px;
+    height: 50px;
+    fill: #121213;
+    transform: rotate(45deg);
+    transition: fill 0.2s;
+}
+
+.github-link a::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    border-width: 45px;
+    border-style: solid;
+    border-color: #818384 #818384 transparent transparent;
+    transition: border-color 0.2s;
+}
+
+.github-link a:hover::before {
+    border-color: #929394 #929394 transparent transparent;
+}
+
+.github-link a:hover svg {
+    fill: #000000;
 }
 
 @media (max-width: 768px) {
