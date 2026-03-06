@@ -182,11 +182,11 @@ function revealWord(guess) {
                 stats.maxStreak = stats.currentStreak;
             }
             stats.guesses[guesses]++;
-            showModal("Congratulations!");
+            showModal("Congratulations!", true, false);
         } else if (isGameOver) {
             stats.currentStreak = 0;
             stats.guesses.fail++;
-            showModal(`You lost! The word was ${state.secret}.`);
+            showModal(`You lost! The word was ${state.secret}.`, true, false);
         }
 
         if (isWinner || isGameOver) {
@@ -304,7 +304,7 @@ function handleKey(key) {
 }
 
 function showTemporaryMessage(message) {
-    showModal(message, false); // Display message without the "Play Again" button
+    showModal(message, false, true); // Display message with "Okay" button, without "Play Again" button
     setTimeout(() => {
         hideModal();
     }, 2000); // Hide after 2 seconds
@@ -319,13 +319,15 @@ function registerDifficultyChangeListener() {
     });
 }
 
-function showModal(message, showPlayAgainButton = true) {
+function showModal(message, showPlayAgainButton = true, showOkayButton = false) {
     const modalContainer = document.getElementById("modal-container");
     const modalMessage = document.getElementById("modal-message");
     const playAgainButton = document.getElementById("play-again-button");
+    const modalOkayButton = document.getElementById("modal-okay-button");
 
     modalMessage.textContent = message;
     playAgainButton.style.display = showPlayAgainButton ? "block" : "none";
+    modalOkayButton.style.display = showOkayButton ? "block" : "none";
     modalContainer.style.display = "flex";
     // Add a small delay before adding the class to ensure the display change is registered
     setTimeout(() => {
@@ -388,6 +390,7 @@ function resetGame() {
 }
 
 document.getElementById("play-again-button").addEventListener("click", resetGame);
+document.getElementById("modal-okay-button").addEventListener("click", hideModal);
 
 document.getElementById("prev-page-button").addEventListener("click", previousPage);
 document.getElementById("next-page-button").addEventListener("click", nextPage);
