@@ -139,6 +139,21 @@ h1 {
     border-radius: 4px;
 }
 
+.modal-button {
+    background-color: #818384; /* A neutral color, similar to keyboard keys */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1rem;
+    cursor: pointer;
+    border-radius: 4px;
+    margin-top: 10px; /* Add some space above the button */
+}
+
+.modal-button:hover {
+    background-color: #929394;
+}
+
 .main-container {
     display: grid;
     grid-template-columns: 1fr auto;
