@@ -395,6 +395,7 @@ h1 {
 
     #game-board {
         width: 100%;
+        max-width: 400px; /* Example: adjust based on desired max width for game board */
         margin: 0 auto 1rem auto; /* Center the game board */
     }
 

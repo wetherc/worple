@@ -69,6 +69,7 @@ let state = {
     letterStates: {}, // Encapsulated letter states
     canDismissModal: false, // New flag to control modal dismissal
     isProcessingGuess: false, // New flag to prevent rapid input during guess animation
+    isGameOver: false,
 };
 
 // --- NEW FUNCTIONS FOR GAME STATE PERSISTENCE ---
@@ -82,7 +83,8 @@ function saveGameState() {
         currentRow: state.currentRow,
         currentCol: state.currentCol,
         letterStates: state.letterStates,
-        selectedDifficulty: state.selectedDifficulty
+        selectedDifficulty: state.selectedDifficulty,
+        isGameOver: state.isGameOver
     };
     localStorage.setItem("wordle-current-game", JSON.stringify(gameState));
 }
@@ -99,6 +101,7 @@ function loadGameState() {
         state.currentCol = gameState.currentCol;
         state.letterStates = gameState.letterStates || {}; // Ensure letterStates is loaded, default to empty if not found
         state.selectedDifficulty = gameState.selectedDifficulty;
+        state.isGameOver = gameState.isGameOver || false;
         return true; // State loaded successfully
     }
     return false; // No stored state found
@@ -121,7 +124,7 @@ function filterWordsAndUpdateDictionary(difficulty) {
 // Function to initialize a brand new game state and UI
 function initializeNewGame(difficulty = state.selectedDifficulty) {
     // Check if a game was in progress before resetting
-    if (state.currentRow > 0 || state.currentCol > 0) {
+    if ((state.currentRow > 0 || state.currentCol > 0) && !state.isGameOver) {
         const stats = getStats();
         stats.gamesPlayed++;
         stats.guesses.fail++;
@@ -142,6 +145,7 @@ function initializeNewGame(difficulty = state.selectedDifficulty) {
         displayStats(); // Update stats display immediately
     }
 
+    state.isGameOver = false;
     state.selectedDifficulty = difficulty; // Ensure difficulty is set
     state.grid = Array(NUM_ROWS).fill().map(() => Array(NUM_COLS).fill(""));
     state.results = Array(NUM_ROWS).fill().map(() => Array(NUM_COLS).fill(""));
@@ -347,6 +351,7 @@ function revealWord(guess) {
         }
 
         if (isWinner || isGameOver) {
+            state.isGameOver = true;
             stats.gamesPlayed++;
             const game = {
                 secretWord: state.secret,
