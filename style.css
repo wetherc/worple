@@ -115,14 +115,15 @@ h1 {
     text-align: center;
     position: relative; /* Needed for transform */
     top: 25%; /* Position 25% down the screen */
-    transform: translateY(-150%); /* Start further above to ensure it drops in */
+    transform: translateY(
+        -150%
+    ); /* Start further above to ensure it drops in */
     transition: transform 0.3s ease-out;
 }
 
 #modal-container.modal-show #modal {
     transform: translateY(0); /* Slide into view */
 }
-
 
 #modal-message {
     margin-bottom: 20px;
@@ -363,7 +364,9 @@ h1 {
     z-index: 1000; /* Ensure it's on top */
     opacity: 0; /* Hidden by default */
     visibility: hidden; /* Hidden by default */
-    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+    transition:
+        opacity 0.3s ease-in-out,
+        visibility 0.3s ease-in-out;
     white-space: nowrap; /* Prevent message from wrapping */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
@@ -404,7 +407,6 @@ h1 {
 
     #keyboard {
         width: 100%; /* Make keyboard fill available width */
-        max-width: 350px; /* Example: adjust based on desired max width for keyboard */
         margin: 0 auto; /* Center the keyboard */
     }
 
@@ -458,5 +460,3 @@ h1 {
         top: 20px; /* Adjust position for mobile */
     }
 }
-
-

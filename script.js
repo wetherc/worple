@@ -279,7 +279,11 @@ function drawTile(container, row, col, letter = "") {
 function registerKeyboardEvents() {
     document.body.onkeydown = (e) => {
         const key = e.key;
-        handleKey(key.toLowerCase());
+        if (key === 'Backspace') {
+            handleKey('\u232b');
+        } else {
+            handleKey(key.toLowerCase());
+        }
     };
 }
 
@@ -417,7 +421,7 @@ function drawKeyboard(container) {
     const keyboardRows = [
         ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"],
         ["a", "s", "d", "f", "g", "h", "j", "k", "l"],
-        ["enter", "z", "x", "c", "v", "b", "n", "m", "&#9003;"]
+        ["enter", "z", "x", "c", "v", "b", "n", "m", "\u232b"]
     ];
 
     keyboardRows.forEach(row => {
@@ -455,7 +459,7 @@ function handleKey(key) {
                 showTemporaryMessage("Not a valid word.");
             }
         }
-    } else if (key === "backspace") {
+    } else if (key === "\u232b") {
         removeLetter();
     } else if (isLetter(key)) {
         addLetter(key);
