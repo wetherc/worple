@@ -373,4 +373,90 @@ h1 {
     visibility: visible;
 }
 
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    .main-container {
+        display: flex;
+        flex-direction: column;
+        gap: 20px; /* Restore a gap between stacked sections */
+        padding: 0; /* Remove horizontal padding for smaller screens */
+    }
+
+    .game-container {
+        width: 100%; /* Make game section fill available width */
+        max-width: 100%; /* Ensure it doesn't exceed screen width */
+    }
+
+    #game-board {
+        width: 100%;
+        max-width: 300px; /* Example: adjust based on desired max width for game board */
+        margin: 0 auto 1rem auto; /* Center the game board */
+    }
+
+    .tile {
+        width: 45px; /* Smaller tiles for mobile */
+        height: 45px;
+        font-size: 1.5rem;
+    }
+
+    #keyboard {
+        width: 100%; /* Make keyboard fill available width */
+        max-width: 350px; /* Example: adjust based on desired max width for keyboard */
+        margin: 0 auto; /* Center the keyboard */
+    }
+
+    .key {
+        padding: 10px 5px;
+        font-size: 0.8rem;
+        flex: 1; /* All keys get equal grow/shrink base */
+    }
+
+    .key[data-key="enter"],
+    .key[data-key="backspace"] {
+        flex: 0; /* Don't grow or shrink from content size */
+        width: 40px; /* Fixed small width */
+        padding: 10px 5px; /* Adjust padding to match other keys */
+    }
+
+    #sidebar {
+        width: 100%; /* Sidebar takes full width */
+        padding: 15px; /* Adjust padding */
+        margin-top: 20px; /* Add space above sidebar */
+    }
+
+    h1 {
+        font-size: 2rem; /* Smaller heading for mobile */
+    }
+
+    .difficulty-selection {
+        width: 100%;
+        margin-bottom: 15px;
+    }
+
+    .difficulty-controls {
+        flex-wrap: wrap; /* Allow controls to wrap */
+        justify-content: center;
+        width: 100%;
+    }
+
+    .difficulty-selection select {
+        min-width: unset; /* Remove min-width constraint */
+        width: 100%; /* Fill available width */
+        max-width: 200px;
+    }
+
+    .difficulty-info-message {
+        width: 100%;
+        text-align: center;
+        margin-top: 10px;
+    }
+
+    #temporary-message-container {
+        top: 20px; /* Adjust position for mobile */
+    }
+}
+
 
