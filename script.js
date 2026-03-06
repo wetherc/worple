@@ -359,7 +359,7 @@ function registerModalDismissalEvents() {
     document.addEventListener("keydown", (e) => {
         const playAgainButton = document.getElementById("play-again-button");
         if ((e.key === "Escape" || e.key === "Enter") && modalContainer.style.display === "flex" && playAgainButton.style.display !== "none" && state.canDismissModal) {
-            hideModal();
+            resetGame(); // Start a new game
         }
     });
 
