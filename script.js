@@ -39,11 +39,8 @@ let allWordsWithDifficulty = [];
 let filteredWordList = []; // Used for secret word selection based on difficulty
 let dictionaryForSecretSelection = new Trie(); // Used for secret word selection
 let dictionaryFull = new Trie(); // Used for word validation (contains all words)
-let letterStates = {};
-let sidebarState = {
-    currentPage: 1,
-    pageSize: 2
-};
+
+
 
 let state = {
     secret: "",
@@ -56,6 +53,11 @@ let state = {
     currentRow: 0,
     currentCol: 0,
     selectedDifficulty: 1, // Default difficulty to "Most Words"
+    sidebar: {
+        currentPage: 1,
+        pageSize: 2
+    },
+    letterStates: {}, // Encapsulated letter states
     canDismissModal: false, // New flag to control modal dismissal
 };
 
@@ -69,7 +71,7 @@ function saveGameState() {
         results: state.results,
         currentRow: state.currentRow,
         currentCol: state.currentCol,
-        letterStates: letterStates,
+        letterStates: state.letterStates,
         selectedDifficulty: state.selectedDifficulty
     };
     localStorage.setItem("wordle-current-game", JSON.stringify(gameState));
@@ -85,7 +87,7 @@ function loadGameState() {
         state.results = gameState.results;
         state.currentRow = gameState.currentRow;
         state.currentCol = gameState.currentCol;
-        letterStates = gameState.letterStates || {}; // Ensure letterStates is loaded, default to empty if not found
+        state.letterStates = gameState.letterStates || {}; // Ensure letterStates is loaded, default to empty if not found
         state.selectedDifficulty = gameState.selectedDifficulty;
         return true; // State loaded successfully
     }
@@ -113,7 +115,7 @@ function initializeNewGame(difficulty = state.selectedDifficulty) {
     state.results = Array(6).fill().map(() => Array(5).fill(""));
     state.currentRow = 0;
     state.currentCol = 0;
-    letterStates = {}; // Clear keyboard states
+    state.letterStates = {}; // Clear keyboard states
 
     filterWordsAndUpdateDictionary(state.selectedDifficulty); // Filter and rebuild dictionary
     state.secret = filteredWordList[Math.floor(Math.random() * filteredWordList.length)]; // Pick a new secret word
@@ -192,11 +194,11 @@ function updateKeyboard() {
         keyElement.classList.remove('correct', 'present', 'absent');
     });
 
-    // Then, apply the specific classes based on the current letterStates
-    for (const key in letterStates) {
+    // Then, apply the specific classes based on the current state.letterStates
+    for (const key in state.letterStates) {
         const keyElement = document.querySelector(`[data-key="${key}"]`);
         if (keyElement) {
-            keyElement.classList.add(letterStates[key]);
+            keyElement.classList.add(state.letterStates[key]);
         }
     }
 }
@@ -256,13 +258,13 @@ function revealWord(guess) {
 
         tile.classList.add(newState);
 
-        const currentState = letterStates[letter];
+        const currentState = state.letterStates[letter];
         if (currentState === 'correct') {
             // do nothing
         } else if (currentState === 'present' && newState !== 'correct') {
             // do nothing
         } else {
-            letterStates[letter] = newState;
+            state.letterStates[letter] = newState;
         }
 
         tile.classList.add("animated");
@@ -524,17 +526,17 @@ document.getElementById("prev-page-button").addEventListener("click", previousPa
 document.getElementById("next-page-button").addEventListener("click", nextPage);
 
 function previousPage() {
-    if (sidebarState.currentPage > 1) {
-        sidebarState.currentPage--;
+    if (state.sidebar.currentPage > 1) {
+        state.sidebar.currentPage--;
         displayStats();
     }
 }
 
 function nextPage() {
     const stats = getStats();
-    const totalPages = Math.max(1, Math.ceil(stats.history.length / sidebarState.pageSize));
-    if (sidebarState.currentPage < totalPages) {
-        sidebarState.currentPage++;
+    const totalPages = Math.max(1, Math.ceil(stats.history.length / state.sidebar.pageSize));
+    if (state.sidebar.currentPage < totalPages) {
+        state.sidebar.currentPage++;
         displayStats();
     }
 }
@@ -583,8 +585,8 @@ function displayStats() {
     recentGamesContent.innerHTML = "";
     const reversedHistory = [...stats.history].reverse();
 
-    const startIndex = (sidebarState.currentPage - 1) * sidebarState.pageSize;
-    const endIndex = startIndex + sidebarState.pageSize;
+    const startIndex = (state.sidebar.currentPage - 1) * state.sidebar.pageSize;
+    const endIndex = startIndex + state.sidebar.pageSize;
     const paginatedHistory = reversedHistory.slice(startIndex, endIndex);
 
     paginatedHistory.forEach(game => {
@@ -611,13 +613,13 @@ function displayStats() {
     });
 
     const pageInfo = document.getElementById("page-info");
-    const totalPages = Math.max(1, Math.ceil(stats.history.length / sidebarState.pageSize));
-    pageInfo.textContent = `Page ${sidebarState.currentPage} of ${totalPages}`;
+    const totalPages = Math.max(1, Math.ceil(stats.history.length / state.sidebar.pageSize));
+    pageInfo.textContent = `Page ${state.sidebar.currentPage} of ${totalPages}`;
 
     const prevButton = document.getElementById("prev-page-button");
     const nextButton = document.getElementById("next-page-button");
-    prevButton.disabled = sidebarState.currentPage === 1;
-    nextButton.disabled = sidebarState.currentPage === totalPages;
+    prevButton.disabled = state.sidebar.currentPage === 1;
+    nextButton.disabled = state.sidebar.currentPage === totalPages;
 }
 
 
