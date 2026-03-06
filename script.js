@@ -417,7 +417,7 @@ function drawKeyboard(container) {
     const keyboardRows = [
         ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"],
         ["a", "s", "d", "f", "g", "h", "j", "k", "l"],
-        ["enter", "z", "x", "c", "v", "b", "n", "m", "backspace"]
+        ["enter", "z", "x", "c", "v", "b", "n", "m", "&#9003;"]
     ];
 
     keyboardRows.forEach(row => {
@@ -426,7 +426,7 @@ function drawKeyboard(container) {
         row.forEach(key => {
             const keyElement = document.createElement("button");
             keyElement.className = "key";
-            keyElement.textContent = key;
+            keyElement.innerHTML = key;
             keyElement.setAttribute("data-key", key);
             if (key.length > 1) {
                 keyElement.style.width = `${WIDE_KEY_WIDTH_PX}px`;
