@@ -166,6 +166,14 @@ h1 {
     width: 100%;
 }
 
+#modal-confirm-button {
+    background-color: #d32f2f; /* Red color for confirm */
+}
+
+#modal-confirm-button:hover {
+    background-color: #e57373; /* Lighter red on hover */
+}
+
 .main-container {
     display: grid;
     grid-template-columns: 1fr auto;
