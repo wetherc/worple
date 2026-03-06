@@ -395,13 +395,13 @@ h1 {
 
     #game-board {
         width: 100%;
-        max-width: 300px; /* Example: adjust based on desired max width for game board */
         margin: 0 auto 1rem auto; /* Center the game board */
     }
 
     .tile {
-        width: 45px; /* Smaller tiles for mobile */
-        height: 45px;
+        width: auto;
+        height: auto;
+        aspect-ratio: 1 / 1;
         font-size: 1.5rem;
     }
 
@@ -411,16 +411,16 @@ h1 {
     }
 
     .key {
-        padding: 10px 5px;
-        font-size: 0.8rem;
+        padding: 18px 5px;
+        font-size: 1.25rem;
         flex: 1; /* All keys get equal grow/shrink base */
     }
 
     .key[data-key="enter"],
-    .key[data-key="backspace"] {
+    .key[data-key="⌫"] {
         flex: 0; /* Don't grow or shrink from content size */
-        width: 40px; /* Fixed small width */
-        padding: 10px 5px; /* Adjust padding to match other keys */
+        width: 60px; /* Fixed small width */
+        padding: 18px 5px; /* Adjust padding to match other keys */
     }
 
     #sidebar {
