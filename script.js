@@ -320,15 +320,20 @@ function registerDifficultyChangeListener() {
     });
 }
 
-function showModal(message, showPlayAgainButton = true, showOkayButton = false) {
+function showModal(message, showPlayAgainButton = true, showOkayButton = false, showConfirmButtons = false) {
     const modalContainer = document.getElementById("modal-container");
     const modalMessage = document.getElementById("modal-message");
     const playAgainButton = document.getElementById("play-again-button");
     const modalOkayButton = document.getElementById("modal-okay-button");
+    const modalConfirmButton = document.getElementById("modal-confirm-button");
+    const modalCancelButton = document.getElementById("modal-cancel-button");
 
     modalMessage.textContent = message;
     playAgainButton.style.display = showPlayAgainButton ? "block" : "none";
     modalOkayButton.style.display = showOkayButton ? "block" : "none";
+    modalConfirmButton.style.display = showConfirmButtons ? "block" : "none";
+    modalCancelButton.style.display = showConfirmButtons ? "block" : "none";
+    
     modalContainer.style.display = "flex";
     // Add a small delay before adding the class to ensure the display change is registered
     setTimeout(() => {
@@ -397,6 +402,21 @@ function resetGame() {
 
 document.getElementById("play-again-button").addEventListener("click", resetGame);
 document.getElementById("modal-okay-button").addEventListener("click", hideModal);
+
+document.getElementById("modal-confirm-button").addEventListener("click", () => {
+    if (onConfirmCallback) {
+        onConfirmCallback();
+        onConfirmCallback = null; // Clear the callback after use
+    }
+});
+document.getElementById("modal-cancel-button").addEventListener("click", () => {
+    hideModal();
+    onConfirmCallback = null; // Clear the callback if canceled
+});
+
+document.getElementById("clear-history-button").addEventListener("click", () => {
+    showConfirmationModal("Are you sure you want to clear your game history? This action cannot be undone.", clearGameHistory);
+});
 
 document.getElementById("prev-page-button").addEventListener("click", previousPage);
 document.getElementById("next-page-button").addEventListener("click", nextPage);
@@ -527,5 +547,17 @@ function saveStats(stats) {
     localStorage.setItem("wordle-stats", JSON.stringify(stats));
 }
 
+function clearGameHistory() {
+    localStorage.removeItem("wordle-stats");
+    displayStats(); // Refresh the stats display
+    hideModal(); // Hide the confirmation modal
+}
+
+let onConfirmCallback = null; // Global variable to store the callback
+
+function showConfirmationModal(message, callback) {
+    onConfirmCallback = callback;
+    showModal(message, false, false, true); // No Play Again, No Okay, Show Confirm buttons
+}
 
 startup();
