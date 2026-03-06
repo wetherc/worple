@@ -430,7 +430,7 @@ function previousPage() {
 
 function nextPage() {
     const stats = getStats();
-    const totalPages = Math.ceil(stats.history.length / sidebarState.pageSize);
+    const totalPages = Math.max(1, Math.ceil(stats.history.length / sidebarState.pageSize));
     if (sidebarState.currentPage < totalPages) {
         sidebarState.currentPage++;
         displayStats();
@@ -509,7 +509,7 @@ function displayStats() {
     });
 
     const pageInfo = document.getElementById("page-info");
-    const totalPages = Math.ceil(stats.history.length / sidebarState.pageSize);
+    const totalPages = Math.max(1, Math.ceil(stats.history.length / sidebarState.pageSize));
     pageInfo.textContent = `Page ${sidebarState.currentPage} of ${totalPages}`;
 
     const prevButton = document.getElementById("prev-page-button");
