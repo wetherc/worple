@@ -464,10 +464,14 @@ function handleKey(key) {
 }
 
 function showTemporaryMessage(message) {
-    showModal({ message: message, showOkay: true, canDismiss: false }); // Display message with "Okay" button, without "Play Again" button, and not dismissable by clicking outside initially
+    const tempMessageContainer = document.getElementById("temporary-message-container");
+    tempMessageContainer.textContent = message;
+    tempMessageContainer.classList.add("show");
+
     setTimeout(() => {
-        hideModal();
-    }, 2000); // Hide after 2 seconds
+        tempMessageContainer.classList.remove("show");
+        tempMessageContainer.textContent = ""; // Clear text after fading out
+    }, 2000); // Display for 2 seconds
 }
 
 function registerDifficultyChangeListener() {
