@@ -133,12 +133,25 @@ function initializeNewGame(difficulty = state.selectedDifficulty) {
 // --- END NEW FUNCTIONS ---
 
 async function startup() {
-    const res = await fetch("words.json.gz");
-    const decompressedResponse = new Response(res.body.pipeThrough(new DecompressionStream('gzip')));
-    allWordsWithDifficulty = await decompressedResponse.json();
+    try {
+        const res = await fetch("words.json.gz");
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        const decompressedResponse = new Response(res.body.pipeThrough(new DecompressionStream('gzip')));
+        allWordsWithDifficulty = await decompressedResponse.json();
 
-    // Populate the full dictionary (used for validation)
-    allWordsWithDifficulty.forEach(item => dictionaryFull.insert(item.word, item.difficulty));
+        // Populate the full dictionary (used for validation)
+        allWordsWithDifficulty.forEach(item => dictionaryFull.insert(item.word, item.difficulty));
+    } catch (error) {
+        console.error("Failed to load word data or initialize game:", error);
+        showModal({
+            message: `Failed to load game data: ${error.message}. Please check your internet connection or try again later.`,
+            showOkay: true,
+            canDismiss: false // Prevent dismissal so user acknowledges the error
+        });
+        return; // Stop further execution if critical data cannot be loaded
+    }
 
     registerDifficultyChangeListener(); // Register early
 
