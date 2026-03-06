@@ -59,6 +59,7 @@ let state = {
     },
     letterStates: {}, // Encapsulated letter states
     canDismissModal: false, // New flag to control modal dismissal
+    isProcessingGuess: false, // New flag to prevent rapid input during guess animation
 };
 
 // --- NEW FUNCTIONS FOR GAME STATE PERSISTENCE ---
@@ -310,6 +311,12 @@ function revealWord(guess) {
             }
         }
 
+        // Advance row and reset column after every guess, regardless of game outcome
+        state.currentRow++;
+        state.currentCol = 0;
+
+        state.isProcessingGuess = false; // Reset flag to allow new input
+
         saveStats(stats);
         displayStats();
     }, 3 * animation_duration);
@@ -388,22 +395,23 @@ function drawKeyboard(container) {
 }
 
 function handleKey(key) {
+    if (state.isProcessingGuess) return; // Prevent input while a guess is being processed
+
     if (key === "enter") {
         if (state.currentCol === 5) {
             const word = getCurrentWord();
             if (isWordValid(word)) {
+                state.isProcessingGuess = true; // Set flag to true
                 revealWord(word);
-                state.currentRow++;
-                state.currentCol = 0;
+                // state.currentRow++; // Moved to revealWord's setTimeout
+                // state.currentCol = 0; // Moved to revealWord's setTimeout
             } else {
                 showTemporaryMessage("Not a valid word.");
             }
         }
-    }
-    if (key === "backspace") {
+    } else if (key === "backspace") {
         removeLetter();
-    }
-    if (isLetter(key)) {
+    } else if (isLetter(key)) {
         addLetter(key);
     }
     updateGrid();
