@@ -35,6 +35,14 @@ class Trie {
     }
 }
 
+// --- Constants ---
+const NUM_ROWS = 6;
+const NUM_COLS = 5;
+const ANIMATION_DURATION_MS = 500;
+const HISTORY_MAX_LENGTH = 10;
+const WIDE_KEY_WIDTH_PX = 100;
+// --- End Constants ---
+
 let allWordsWithDifficulty = [];
 let filteredWordList = []; // Used for secret word selection based on difficulty
 let dictionaryForSecretSelection = new Trie(); // Used for secret word selection
@@ -44,12 +52,12 @@ let dictionaryFull = new Trie(); // Used for word validation (contains all words
 
 let state = {
     secret: "",
-    grid: Array(6)
+    grid: Array(NUM_ROWS)
         .fill()
-        .map(() => Array(5).fill("")),
-    results: Array(6)
+        .map(() => Array(NUM_COLS).fill("")),
+    results: Array(NUM_ROWS)
         .fill()
-        .map(() => Array(5).fill("")),
+        .map(() => Array(NUM_COLS).fill("")),
     currentRow: 0,
     currentCol: 0,
     selectedDifficulty: 1, // Default difficulty to "Most Words"
@@ -112,8 +120,8 @@ function filterWordsAndUpdateDictionary(difficulty) {
 // Function to initialize a brand new game state and UI
 function initializeNewGame(difficulty = state.selectedDifficulty) {
     state.selectedDifficulty = difficulty; // Ensure difficulty is set
-    state.grid = Array(6).fill().map(() => Array(5).fill(""));
-    state.results = Array(6).fill().map(() => Array(5).fill(""));
+    state.grid = Array(NUM_ROWS).fill().map(() => Array(NUM_COLS).fill(""));
+    state.results = Array(NUM_ROWS).fill().map(() => Array(NUM_COLS).fill(""));
     state.currentRow = 0;
     state.currentCol = 0;
     state.letterStates = {}; // Clear keyboard states
@@ -168,9 +176,9 @@ async function startup() {
 
 
         // Re-apply results for all previously completed and evaluated guesses
-        for (let r = 0; r < 6; r++) { // Iterate through all possible rows
+        for (let r = 0; r < NUM_ROWS; r++) { // Iterate through all possible rows
             if (state.grid[r][0] !== "" && state.results[r][0] !== "") { // If row has a guess AND has results
-                for (let c = 0; c < 5; c++) {
+                for (let c = 0; c < NUM_COLS; c++) {
                     const tile = document.getElementById(`tile${r}${c}`);
                     const result = state.results[r][c];
                     if (result) {
@@ -182,7 +190,7 @@ async function startup() {
 
         // After loading, if the current column is 5 and the row was evaluated,
         // it means the game was waiting for the next guess. Advance to the next row.
-        if (state.currentCol === 5 && state.currentRow < 6 && state.results[state.currentRow] && state.results[state.currentRow][0] !== "") {
+        if (state.currentCol === NUM_COLS && state.currentRow < NUM_ROWS && state.results[state.currentRow] && state.results[state.currentRow][0] !== "") {
             state.currentRow++;
             state.currentCol = 0;
         }
@@ -218,16 +226,16 @@ function updateKeyboard() {
 }
 
 function drawGrid(container) {
-    for (let i = 0; i < 6; i++) {
-        for (let j = 0; j < 5; j++) {
+    for (let i = 0; i < NUM_ROWS; i++) {
+        for (let j = 0; j < NUM_COLS; j++) {
             drawTile(container, i, j);
         }
     }
 }
 
 function updateGrid() {
-    for (let i = 0; i < state.grid.length; i++) {
-        for (let j = 0; j < state.grid[i].length; j++) {
+    for (let i = 0; i < NUM_ROWS; i++) {
+        for (let j = 0; j < NUM_COLS; j++) {
             const tile = document.getElementById(`tile${i}${j}`);
             tile.textContent = state.grid[i][j];
         }
@@ -260,12 +268,12 @@ function isWordValid(word) {
 
 function revealWord(guess) {
     const row = state.currentRow;
-    const animation_duration = 500;
+    const animation_duration = ANIMATION_DURATION_MS;
 
     const guessResult = checkGuess(guess, state.secret);
     state.results[row] = guessResult;
 
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < NUM_COLS; i++) {
         const tile = document.getElementById(`tile${row}${i}`);
         const letter = guess[i];
         const newState = guessResult[i];
@@ -282,14 +290,14 @@ function revealWord(guess) {
         }
 
         tile.classList.add("animated");
-        tile.style.animationDelay = `${(i * animation_duration) / 2}ms`;
+        tile.style.animationDelay = `${(i * ANIMATION_DURATION_MS) / 2}ms`;
     }
     updateKeyboard();
     saveGameState(); // Save game state after each guess
 
 
     const isWinner = state.secret === guess;
-    const isGameOver = state.currentRow === 5;
+    const isGameOver = state.currentRow === (NUM_ROWS - 1);
 
     setTimeout(() => {
         const stats = getStats();
@@ -319,7 +327,7 @@ function revealWord(guess) {
                 difficulty: dictionaryForSecretSelection.search(state.secret) // Store the difficulty
             };
             stats.history.push(game);
-            if (stats.history.length > 10) {
+            if (stats.history.length > HISTORY_MAX_LENGTH) {
                 stats.history.shift();
             }
         }
@@ -332,7 +340,7 @@ function revealWord(guess) {
 
         saveStats(stats);
         displayStats();
-    }, 3 * animation_duration);
+    }, 3 * ANIMATION_DURATION_MS);
 }
 
 function checkGuess(guess, secret) {
@@ -343,14 +351,14 @@ function checkGuess(guess, secret) {
         secretLetterCount[letter] = (secretLetterCount[letter] || 0) + 1;
     }
 
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < NUM_COLS; i++) {
         if (guess[i] === secret[i]) {
             result[i] = 'correct';
             secretLetterCount[guess[i]]--;
         }
     }
 
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < NUM_COLS; i++) {
         if (result[i]) continue;
 
         if (secret.includes(guess[i]) && secretLetterCount[guess[i]] > 0) {
@@ -396,7 +404,7 @@ function drawKeyboard(container) {
             keyElement.textContent = key;
             keyElement.setAttribute("data-key", key);
             if (key.length > 1) {
-                keyElement.style.width = "100px";
+                keyElement.style.width = `${WIDE_KEY_WIDTH_PX}px`;
             }
             keyElement.addEventListener("click", () => {
                 handleKey(key);
@@ -411,7 +419,7 @@ function handleKey(key) {
     if (state.isProcessingGuess) return; // Prevent input while a guess is being processed
 
     if (key === "enter") {
-        if (state.currentCol === 5) {
+        if (state.currentCol === NUM_COLS) {
             const word = getCurrentWord();
             if (isWordValid(word)) {
                 state.isProcessingGuess = true; // Set flag to true
@@ -631,9 +639,9 @@ function displayStats() {
         gameElement.classList.add("game");
 
         let gameGrid = '<div class="game-grid">';
-        for (let i = 0; i < 6; i++) { // Always render 6 rows
+        for (let i = 0; i < NUM_ROWS; i++) { // Always render NUM_ROWS rows
             gameGrid += '<div class="guess-row">';
-            for (let j = 0; j < 5; j++) { // Always render 5 columns
+            for (let j = 0; j < NUM_COLS; j++) { // Always render NUM_COLS columns
                 const result = (game.results && game.results[i] && game.results[i][j]) ? game.results[i][j] : '';
                 const letter = (game.guesses && game.guesses[i] && game.guesses[i][j]) ? game.guesses[i][j] : '';
                 gameGrid += `<div class="tile ${result}">${letter}</div>`;
@@ -682,8 +690,8 @@ function getStats() {
 
 function saveStats(stats) {
     // Ensure history only contains the last 10 games before saving
-    if (stats.history.length > 10) {
-        stats.history = stats.history.slice(-10);
+    if (stats.history.length > HISTORY_MAX_LENGTH) {
+        stats.history = stats.history.slice(-HISTORY_MAX_LENGTH);
     }
     localStorage.setItem("wordle-stats", JSON.stringify(stats));
 }
