@@ -151,7 +151,7 @@ async function startup() {
         gameBoard.innerHTML = '';
         drawGrid(gameBoard);
         updateGrid();
-        // updateKeyboard(); // Moved to after drawKeyboard()
+
 
         // Re-apply results for all previously completed and evaluated guesses
         for (let r = 0; r < 6; r++) { // Iterate through all possible rows
