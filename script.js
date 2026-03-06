@@ -327,11 +327,20 @@ function showModal(message, showPlayAgainButton = true) {
     modalMessage.textContent = message;
     playAgainButton.style.display = showPlayAgainButton ? "block" : "none";
     modalContainer.style.display = "flex";
+    // Add a small delay before adding the class to ensure the display change is registered
+    setTimeout(() => {
+        modalContainer.classList.add("modal-show");
+    }, 10);
 }
 
 function hideModal() {
     const modalContainer = document.getElementById("modal-container");
-    modalContainer.style.display = "none";
+    modalContainer.classList.remove("modal-show");
+    // Wait for the transition to finish before setting display to none
+    modalContainer.addEventListener('transitionend', function handler() {
+        modalContainer.style.display = "none";
+        modalContainer.removeEventListener('transitionend', handler);
+    });
 }
 
 function registerModalDismissalEvents() {

@@ -98,8 +98,15 @@ h1 {
     right: 0;
     bottom: 0;
     background-color: rgba(0, 0, 0, 0.5);
-    justify-content: center;
-    align-items: center;
+    justify-content: center; /* Keep horizontal centering for the modal content */
+    align-items: flex-start; /* Align modal content to the top */
+    padding-top: 10vh; /* Space from the top */
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+#modal-container.modal-show {
+    opacity: 1;
 }
 
 #modal {
@@ -107,7 +114,16 @@ h1 {
     padding: 20px;
     border-radius: 10px;
     text-align: center;
+    transform: translateY(-100%); /* Start above the viewport */
+    transition: transform 0.3s ease-out;
+    margin-top: -10vh; /* Adjust based on padding-top of container */
+    position: relative; /* Needed for transform */
 }
+
+#modal-container.modal-show #modal {
+    transform: translateY(0); /* Slide into view */
+}
+
 
 #modal-message {
     margin-bottom: 20px;
