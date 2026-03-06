@@ -297,6 +297,14 @@ h1 {
 .difficulty-selection {
     margin-bottom: 20px;
     display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: fit-content;
+}
+
+.difficulty-controls {
+    display: flex;
     align-items: center;
     gap: 10px;
 }
@@ -333,3 +341,13 @@ h1 {
     border-color: #538d4e;
     box-shadow: 0 0 0 2px rgba(83, 141, 78, 0.5);
 }
+
+.difficulty-info-message {
+    font-style: italic;
+    font-size: 0.8em;
+    color: #b0b0b0;
+    margin-top: 5px; /* Add some space below the select box */
+    text-align: center;
+}
+
+

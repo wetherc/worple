@@ -36,8 +36,9 @@ class Trie {
 }
 
 let allWordsWithDifficulty = [];
-let filteredWordList = [];
-let dictionary = new Trie();
+let filteredWordList = []; // Used for secret word selection based on difficulty
+let dictionaryForSecretSelection = new Trie(); // Used for secret word selection
+let dictionaryFull = new Trie(); // Used for word validation (contains all words)
 let letterStates = {};
 let sidebarState = {
     currentPage: 1,
@@ -58,42 +59,143 @@ let state = {
     canDismissModal: false, // New flag to control modal dismissal
 };
 
+// --- NEW FUNCTIONS FOR GAME STATE PERSISTENCE ---
+
+// Function to save current game state to localStorage
+function saveGameState() {
+    const gameState = {
+        secret: state.secret,
+        grid: state.grid,
+        results: state.results,
+        currentRow: state.currentRow,
+        currentCol: state.currentCol,
+        letterStates: letterStates,
+        selectedDifficulty: state.selectedDifficulty
+    };
+    localStorage.setItem("wordle-current-game", JSON.stringify(gameState));
+}
+
+// Function to load current game state from localStorage
+function loadGameState() {
+    const storedGameState = localStorage.getItem("wordle-current-game");
+    if (storedGameState) {
+        const gameState = JSON.parse(storedGameState);
+        state.secret = gameState.secret;
+        state.grid = gameState.grid;
+        state.results = gameState.results;
+        state.currentRow = gameState.currentRow;
+        state.currentCol = gameState.currentCol;
+        letterStates = gameState.letterStates || {}; // Ensure letterStates is loaded, default to empty if not found
+        state.selectedDifficulty = gameState.selectedDifficulty;
+        return true; // State loaded successfully
+    }
+    return false; // No stored state found
+}
+
+// Function to clear current game state from localStorage
+function clearGameState() {
+    localStorage.removeItem("wordle-current-game");
+}
+
+// Helper to filter words based on selected difficulty and rebuild Trie
+function filterWordsAndUpdateDictionary(difficulty) {
+    filteredWordList = allWordsWithDifficulty
+        .filter(item => item.difficulty <= difficulty)
+        .map(item => item.word);
+    dictionaryForSecretSelection = new Trie(); // Rebuild for secret word selection
+    filteredWordList.forEach(word => dictionaryForSecretSelection.insert(word, difficulty));
+}
+
+// Function to initialize a brand new game state and UI
+function initializeNewGame(difficulty = state.selectedDifficulty) {
+    state.selectedDifficulty = difficulty; // Ensure difficulty is set
+    state.grid = Array(6).fill().map(() => Array(5).fill(""));
+    state.results = Array(6).fill().map(() => Array(5).fill(""));
+    state.currentRow = 0;
+    state.currentCol = 0;
+    letterStates = {}; // Clear keyboard states
+
+    filterWordsAndUpdateDictionary(state.selectedDifficulty); // Filter and rebuild dictionary
+    state.secret = filteredWordList[Math.floor(Math.random() * filteredWordList.length)]; // Pick a new secret word
+
+    // Update UI
+    const gameBoard = document.getElementById("game-board");
+    gameBoard.innerHTML = ''; // Clear existing grid
+    drawGrid(gameBoard); // Redraw empty grid
+    updateKeyboard(); // Reset keyboard colors
+
+    clearGameState(); // Clear any previously saved game state
+}
+
+// --- END NEW FUNCTIONS ---
+
 async function startup() {
     const res = await fetch("words.json.gz");
     const decompressedResponse = new Response(res.body.pipeThrough(new DecompressionStream('gzip')));
     allWordsWithDifficulty = await decompressedResponse.json();
 
-    applyDifficultyFilter();
+    // Populate the full dictionary (used for validation)
+    allWordsWithDifficulty.forEach(item => dictionaryFull.insert(item.word, item.difficulty));
 
-    const game = document.getElementById("game-board");
-    const keyboard = document.getElementById("keyboard");
-    drawGrid(game);
-    drawKeyboard(keyboard);
+    registerDifficultyChangeListener(); // Register early
+
+    const difficultySelect = document.getElementById("difficulty"); // Get select element here
+
+    if (loadGameState()) {
+        filterWordsAndUpdateDictionary(state.selectedDifficulty); // Ensure dictionary is built for the loaded difficulty
+        difficultySelect.value = state.selectedDifficulty; // Update dropdown to reflect loaded state
+
+        const gameBoard = document.getElementById("game-board");
+        gameBoard.innerHTML = '';
+        drawGrid(gameBoard);
+        updateGrid();
+        // updateKeyboard(); // Moved to after drawKeyboard()
+
+        // Re-apply results for all previously completed and evaluated guesses
+        for (let r = 0; r < 6; r++) { // Iterate through all possible rows
+            if (state.grid[r][0] !== "" && state.results[r][0] !== "") { // If row has a guess AND has results
+                for (let c = 0; c < 5; c++) {
+                    const tile = document.getElementById(`tile${r}${c}`);
+                    const result = state.results[r][c];
+                    if (result) {
+                        tile.classList.add(result);
+                    }
+                }
+            }
+        }
+
+        // After loading, if the current column is 5 and the row was evaluated,
+        // it means the game was waiting for the next guess. Advance to the next row.
+        if (state.currentCol === 5 && state.currentRow < 6 && state.results[state.currentRow] && state.results[state.currentRow][0] !== "") {
+            state.currentRow++;
+            state.currentCol = 0;
+        }
+
+    } else {
+        initializeNewGame(); // No stored game, start a fresh one
+        difficultySelect.value = state.selectedDifficulty; // Set dropdown to default (1)
+    }
+
+    drawKeyboard(document.getElementById("keyboard"));
     registerKeyboardEvents();
     displayStats();
-    registerDifficultyChangeListener(); // New function to handle difficulty changes
     registerModalDismissalEvents();
+    updateKeyboard(); // Ensure keyboard is updated after it's drawn
 }
 
-function applyDifficultyFilter() {
-    // Filter words based on selected difficulty
-    filteredWordList = allWordsWithDifficulty
-        .filter(item => item.difficulty <= state.selectedDifficulty)
-        .map(item => item.word);
 
-    // Clear and rebuild the dictionary with filtered words
-    dictionary = new Trie(); // Reset the trie
-    filteredWordList.forEach(word => dictionary.insert(word, state.selectedDifficulty)); // Use a placeholder difficulty for simplicity here, actual difficulty is in allWordsWithDifficulty
-
-    // Select a new secret word from the filtered list
-    state.secret = filteredWordList[Math.floor(Math.random() * filteredWordList.length)];
-}
 
 function updateKeyboard() {
+    // First, clear all existing color classes from all keyboard keys
+    const allKeys = document.querySelectorAll('.key');
+    allKeys.forEach(keyElement => {
+        keyElement.classList.remove('correct', 'present', 'absent');
+    });
+
+    // Then, apply the specific classes based on the current letterStates
     for (const key in letterStates) {
         const keyElement = document.querySelector(`[data-key="${key}"]`);
         if (keyElement) {
-            keyElement.classList.remove('correct', 'present', 'absent');
             keyElement.classList.add(letterStates[key]);
         }
     }
@@ -137,7 +239,7 @@ function getCurrentWord() {
 }
 
 function isWordValid(word) {
-    return dictionary.search(word) !== null;
+    return dictionaryFull.search(word) !== null; // Validate against the full dictionary
 }
 
 function revealWord(guess) {
@@ -167,6 +269,7 @@ function revealWord(guess) {
         tile.style.animationDelay = `${(i * animation_duration) / 2}ms`;
     }
     updateKeyboard();
+    saveGameState(); // Save game state after each guess
 
 
     const isWinner = state.secret === guess;
@@ -197,7 +300,7 @@ function revealWord(guess) {
                 guesses: state.grid.slice(0, guesses).map(row => [...row]),
                 results: state.results.slice(0, guesses).map(row => [...row]),
                 win: isWinner,
-                difficulty: dictionary.search(state.secret) // Store the difficulty
+                difficulty: dictionaryForSecretSelection.search(state.secret) // Store the difficulty
             };
             stats.history.push(game);
             if (stats.history.length > 10) {
@@ -314,9 +417,20 @@ function showTemporaryMessage(message) {
 function registerDifficultyChangeListener() {
     const difficultySelect = document.getElementById("difficulty");
     difficultySelect.addEventListener("change", (event) => {
-        state.selectedDifficulty = parseInt(event.target.value);
-        applyDifficultyFilter();
-        resetGame(); // Reset the game when difficulty changes
+        const newDifficulty = parseInt(event.target.value);
+
+        if (state.currentRow > 0) { // Game in progress
+            showConfirmationModal(
+                "Changing difficulty will reset the current game. Are you sure?",
+                () => {
+                    initializeNewGame(newDifficulty); // Reset game, pick new word for new difficulty
+                    saveGameState(); // Save the new game state
+                }
+            );
+        } else { // No game in progress
+            initializeNewGame(newDifficulty); // Reset game, pick new word for new difficulty
+            saveGameState(); // Save the new game state
+        }
     });
 }
 
@@ -376,28 +490,9 @@ function registerModalDismissalEvents() {
     });
 }
 
-function resetGame() {
-    state.grid = Array(6)
-        .fill()
-        .map(() => Array(5).fill(""));
-    state.results = Array(6)
-        .fill()
-        .map(() => Array(5).fill(""));
-    state.currentRow = 0;
-    state.currentCol = 0;
-    state.secret = filteredWordList[Math.floor(Math.random() * filteredWordList.length)];
-
-    const gameBoard = document.getElementById("game-board");
-    gameBoard.innerHTML = '';
-    drawGrid(gameBoard);
-
-    const keys = document.querySelectorAll(".key");
-    keys.forEach(key => {
-        key.classList.remove("correct", "present", "absent");
-    });
-
-    letterStates = {};
-    hideModal();
+function resetGame() { // SIMPLIFIED resetGame
+    initializeNewGame(state.selectedDifficulty);
+    hideModal(); // Hide any active modals
 }
 
 document.getElementById("play-again-button").addEventListener("click", resetGame);
@@ -408,10 +503,17 @@ document.getElementById("modal-confirm-button").addEventListener("click", () => 
         onConfirmCallback();
         onConfirmCallback = null; // Clear the callback after use
     }
+    hideModal(); // Dismiss the modal after confirmation
 });
 document.getElementById("modal-cancel-button").addEventListener("click", () => {
     hideModal();
     onConfirmCallback = null; // Clear the callback if canceled
+
+    // Revert the difficulty dropdown to the current game's difficulty
+    const difficultySelect = document.getElementById("difficulty");
+    if (difficultySelect) {
+        difficultySelect.value = state.selectedDifficulty;
+    }
 });
 
 document.getElementById("clear-history-button").addEventListener("click", () => {

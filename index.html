@@ -10,12 +10,17 @@
         <div class="main-container">
             <div class="game-container">
                 <div class="difficulty-selection">
-                    <label for="difficulty">Difficulty:</label>
-                    <select id="difficulty">
-                        <option value="0">Common Words Only</option>
-                        <option value="1" selected>Most Words</option>
-                        <option value="2">Gamer Rage</option>
-                    </select>
+                    <div class="difficulty-controls">
+                        <label for="difficulty">Difficulty:</label>
+                        <select id="difficulty">
+                            <option value="0">Common Words Only</option>
+                            <option value="1" selected>Most Words</option>
+                            <option value="2">Gamer Rage</option>
+                        </select>
+                    </div>
+                    <div id="difficulty-message" class="difficulty-info-message">
+                        ℹ️ Changing difficulty resets the current game.
+                    </div>
                 </div>
                 <h1>Worple</h1>
                 <div id="game-board"></div>
@@ -31,17 +36,25 @@
                     <span id="page-info"></span>
                     <button id="next-page-button">Next &raquo;</button>
                 </div>
-                <button id="clear-history-button" class="modal-button">Clear History</button>
+                <button id="clear-history-button" class="modal-button">
+                    Clear History
+                </button>
             </div>
         </div>
         <div id="modal-container">
             <div id="modal">
                 <div id="modal-message"></div>
                 <div id="modal-buttons-container">
-                    <button id="modal-okay-button" class="modal-button">Okay</button>
+                    <button id="modal-okay-button" class="modal-button">
+                        Okay
+                    </button>
                     <button id="play-again-button">Play Again</button>
-                    <button id="modal-confirm-button" class="modal-button">Confirm</button>
-                    <button id="modal-cancel-button" class="modal-button">Cancel</button>
+                    <button id="modal-confirm-button" class="modal-button">
+                        Confirm
+                    </button>
+                    <button id="modal-cancel-button" class="modal-button">
+                        Cancel
+                    </button>
                 </div>
             </div>
         </div>
