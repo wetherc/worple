@@ -71,6 +71,7 @@ async function startup() {
     registerKeyboardEvents();
     displayStats();
     registerDifficultyChangeListener(); // New function to handle difficulty changes
+    registerModalDismissalEvents();
 }
 
 function applyDifficultyFilter() {
@@ -289,7 +290,7 @@ function handleKey(key) {
                 state.currentRow++;
                 state.currentCol = 0;
             } else {
-                alert("Not a valid word.");
+                showTemporaryMessage("Not a valid word.");
             }
         }
     }
@@ -302,6 +303,13 @@ function handleKey(key) {
     updateGrid();
 }
 
+function showTemporaryMessage(message) {
+    showModal(message, false); // Display message without the "Play Again" button
+    setTimeout(() => {
+        hideModal();
+    }, 2000); // Hide after 2 seconds
+}
+
 function registerDifficultyChangeListener() {
     const difficultySelect = document.getElementById("difficulty");
     difficultySelect.addEventListener("change", (event) => {
@@ -311,16 +319,38 @@ function registerDifficultyChangeListener() {
     });
 }
 
-function showModal(message) {
+function showModal(message, showPlayAgainButton = true) {
     const modalContainer = document.getElementById("modal-container");
     const modalMessage = document.getElementById("modal-message");
+    const playAgainButton = document.getElementById("play-again-button");
+
     modalMessage.textContent = message;
+    playAgainButton.style.display = showPlayAgainButton ? "block" : "none";
     modalContainer.style.display = "flex";
 }
 
 function hideModal() {
     const modalContainer = document.getElementById("modal-container");
     modalContainer.style.display = "none";
+}
+
+function registerModalDismissalEvents() {
+    const modalContainer = document.getElementById("modal-container");
+    const modal = document.getElementById("modal");
+
+    // Dismissal by Escape key
+    document.addEventListener("keydown", (e) => {
+        if ((e.key === "Escape" || e.key === "Enter") && modalContainer.style.display === "flex") {
+            hideModal();
+        }
+    });
+
+    // Dismissal by clicking outside the modal content
+    modalContainer.addEventListener("click", (e) => {
+        if (e.target === modalContainer) {
+            hideModal();
+        }
+    });
 }
 
 function resetGame() {
