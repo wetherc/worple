@@ -154,6 +154,13 @@ h1 {
     background-color: #929394;
 }
 
+#modal-buttons-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px; /* Space between buttons */
+    margin-top: 20px; /* Space above the button container */
+}
+
 .main-container {
     display: grid;
     grid-template-columns: 1fr auto;
