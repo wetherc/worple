@@ -490,18 +490,14 @@ function displayStats() {
         gameElement.classList.add("game");
 
         let gameGrid = '<div class="game-grid">';
-        if (game.guesses) {
-            for(let i = 0; i < game.guesses.length; i++) {
-                gameGrid += '<div class="guess-row">';
-                if (game.guesses[i]) {
-                    for(let j = 0; j < game.guesses[i].length; j++) {
-                        const result = (game.results && game.results[i] && game.results[i][j]) ? game.results[i][j] : '';
-                        const letter = game.guesses[i][j] ? game.guesses[i][j] : '';
-                        gameGrid += `<div class="tile ${result}">${letter}</div>`;
-                    }
-                }
-                gameGrid += '</div>';
+        for (let i = 0; i < 6; i++) { // Always render 6 rows
+            gameGrid += '<div class="guess-row">';
+            for (let j = 0; j < 5; j++) { // Always render 5 columns
+                const result = (game.results && game.results[i] && game.results[i][j]) ? game.results[i][j] : '';
+                const letter = (game.guesses && game.guesses[i] && game.guesses[i][j]) ? game.guesses[i][j] : '';
+                gameGrid += `<div class="tile ${result}">${letter}</div>`;
             }
+            gameGrid += '</div>';
         }
         gameGrid += '</div>';
 
