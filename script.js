@@ -540,6 +540,10 @@ function getStats() {
 }
 
 function saveStats(stats) {
+    // Ensure history only contains the last 10 games before saving
+    if (stats.history.length > 10) {
+        stats.history = stats.history.slice(-10);
+    }
     localStorage.setItem("wordle-stats", JSON.stringify(stats));
 }
 
