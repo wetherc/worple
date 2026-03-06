@@ -52,6 +52,7 @@ let dictionaryFull = new Trie(); // Used for word validation (contains all words
 
 let state = {
     secret: "",
+    secretDifficulty: null, // Stores the difficulty of the current secret word
     grid: Array(NUM_ROWS)
         .fill()
         .map(() => Array(NUM_COLS).fill("")),
@@ -128,6 +129,8 @@ function initializeNewGame(difficulty = state.selectedDifficulty) {
 
     filterWordsAndUpdateDictionary(state.selectedDifficulty); // Filter and rebuild dictionary
     state.secret = filteredWordList[Math.floor(Math.random() * filteredWordList.length)]; // Pick a new secret word
+    const selectedWordItem = allWordsWithDifficulty.find(item => item.word === state.secret);
+    state.secretDifficulty = selectedWordItem ? selectedWordItem.difficulty : null; // Store the difficulty
 
     // Update UI
     const gameBoard = document.getElementById("game-board");
@@ -324,7 +327,7 @@ function revealWord(guess) {
                 guesses: state.grid.slice(0, guesses).map(row => [...row]),
                 results: state.results.slice(0, guesses).map(row => [...row]),
                 win: isWinner,
-                difficulty: dictionaryForSecretSelection.search(state.secret) // Store the difficulty
+                difficulty: state.secretDifficulty // Use the pre-stored difficulty
             };
             stats.history.push(game);
             if (stats.history.length > HISTORY_MAX_LENGTH) {
