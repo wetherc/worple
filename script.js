@@ -120,6 +120,28 @@ function filterWordsAndUpdateDictionary(difficulty) {
 
 // Function to initialize a brand new game state and UI
 function initializeNewGame(difficulty = state.selectedDifficulty) {
+    // Check if a game was in progress before resetting
+    if (state.currentRow > 0 || state.currentCol > 0) {
+        const stats = getStats();
+        stats.gamesPlayed++;
+        stats.guesses.fail++;
+        stats.currentStreak = 0;
+
+        const abandonedGame = {
+            secretWord: state.secret,
+            guesses: state.grid.slice(0, state.currentRow).map(row => [...row]),
+            results: state.results.slice(0, state.currentRow).map(row => [...row]),
+            win: false, // Mark as loss
+            difficulty: state.secretDifficulty || 0 // Use stored difficulty, default to 0 if not found
+        };
+        stats.history.push(abandonedGame);
+        if (stats.history.length > HISTORY_MAX_LENGTH) {
+            stats.history.shift();
+        }
+        saveStats(stats);
+        displayStats(); // Update stats display immediately
+    }
+
     state.selectedDifficulty = difficulty; // Ensure difficulty is set
     state.grid = Array(NUM_ROWS).fill().map(() => Array(NUM_COLS).fill(""));
     state.results = Array(NUM_ROWS).fill().map(() => Array(NUM_COLS).fill(""));
@@ -537,22 +559,63 @@ function hideModal() {
 
 function registerModalDismissalEvents() {
     const modalContainer = document.getElementById("modal-container");
-    const modal = document.getElementById("modal");
+    // const modal = document.getElementById("modal"); // Not used
 
     // Dismissal by Escape/Enter key
     document.addEventListener("keydown", (e) => {
         const playAgainButton = document.getElementById("play-again-button");
-        if ((e.key === "Escape" || e.key === "Enter") && modalContainer.style.display === "flex" && playAgainButton.style.display !== "none" && state.canDismissModal) {
-            resetGame(); // Start a new game
+        const modalConfirmButton = document.getElementById("modal-confirm-button");
+        const modalOkayButton = document.getElementById("modal-okay-button"); // Added for temporary messages
+
+        if (modalContainer.style.display === "flex") { // Only act if modal is visible
+            if (e.key === "Escape" && state.canDismissModal) {
+                // Only hide if it's not a confirmation modal
+                if (modalConfirmButton.style.display === "none") {
+                    hideModal();
+                }
+            } else if (e.key === "Enter") {
+                if (playAgainButton.style.display !== "none") {
+                    resetGame();
+                } else if (modalConfirmButton.style.display !== "none") {
+                    // Simulate click on confirm button for confirmation modals
+                    modalConfirmButton.click();
+                } else if (modalOkayButton.style.display !== "none") {
+                    // Simulate click on okay button for temporary messages
+                    modalOkayButton.click();
+                } else if (state.canDismissModal) { // General dismissal if no specific buttons
+                    hideModal();
+                }
+            }
         }
     });
 
     // Dismissal by clicking outside the modal content
     modalContainer.addEventListener("click", (e) => {
-        if (e.target === modalContainer && state.canDismissModal) {
+        const modalConfirmButton = document.getElementById("modal-confirm-button");
+        if (e.target === modalContainer && state.canDismissModal && modalConfirmButton.style.display === "none") {
             hideModal();
         }
     });
+}
+
+function processNewGame() {
+    initializeNewGame(state.selectedDifficulty);
+    hideModal(); // Hide any active modals
+}
+
+function handleNewGameRequest() {
+    if (state.currentRow > 0) { // Game in progress, ask for confirmation
+        showConfirmationModal(
+            "Starting a new game will abandon the current game. Abandoned games are counted as losses. Are you sure?",
+            () => {
+                // User confirmed, process the abandonment and start a new game
+                // This logic will be added later for the "abandoned game as loss" feature
+                processNewGame();
+            }
+        );
+    } else { // No game in progress, start new game directly
+        processNewGame();
+    }
 }
 
 function resetGame() { // SIMPLIFIED resetGame
@@ -572,6 +635,7 @@ document.getElementById("clear-history-button").addEventListener("click", () => 
 
 document.getElementById("prev-page-button").addEventListener("click", previousPage);
 document.getElementById("next-page-button").addEventListener("click", nextPage);
+document.getElementById("new-game-button").addEventListener("click", handleNewGameRequest);
 
 function previousPage() {
     if (state.sidebar.currentPage > 1) {
