@@ -288,11 +288,11 @@ function revealWord(guess) {
                 stats.maxStreak = stats.currentStreak;
             }
             stats.guesses[guesses]++;
-            showModal("Congratulations!", true, false);
+            showModal({ message: "Congratulations!", showPlayAgain: true });
         } else if (isGameOver) {
             stats.currentStreak = 0;
             stats.guesses.fail++;
-            showModal(`You lost! The word was ${state.secret}.`, true, false);
+            showModal({ message: `You lost! The word was ${state.secret}.`, showPlayAgain: true });
         }
 
         if (isWinner || isGameOver) {
@@ -410,7 +410,7 @@ function handleKey(key) {
 }
 
 function showTemporaryMessage(message) {
-    showModal(message, false, true); // Display message with "Okay" button, without "Play Again" button
+    showModal({ message: message, showOkay: true, canDismiss: false }); // Display message with "Okay" button, without "Play Again" button, and not dismissable by clicking outside initially
     setTimeout(() => {
         hideModal();
     }, 2000); // Hide after 2 seconds
@@ -436,7 +436,18 @@ function registerDifficultyChangeListener() {
     });
 }
 
-function showModal(message, showPlayAgainButton = true, showOkayButton = false, showConfirmButtons = false) {
+function showModal(options) {
+    const defaults = {
+        message: "",
+        showPlayAgain: false,
+        showOkay: false,
+        showConfirm: false,
+        onConfirm: null,
+        onCancel: null,
+        canDismiss: true // New: control overall dismissal
+    };
+    const settings = { ...defaults, ...options };
+
     const modalContainer = document.getElementById("modal-container");
     const modalMessage = document.getElementById("modal-message");
     const playAgainButton = document.getElementById("play-again-button");
@@ -444,19 +455,39 @@ function showModal(message, showPlayAgainButton = true, showOkayButton = false, 
     const modalConfirmButton = document.getElementById("modal-confirm-button");
     const modalCancelButton = document.getElementById("modal-cancel-button");
 
-    modalMessage.textContent = message;
-    playAgainButton.style.display = showPlayAgainButton ? "block" : "none";
-    modalOkayButton.style.display = showOkayButton ? "block" : "none";
-    modalConfirmButton.style.display = showConfirmButtons ? "block" : "none";
-    modalCancelButton.style.display = showConfirmButtons ? "block" : "none";
+    modalMessage.textContent = settings.message;
+    playAgainButton.style.display = settings.showPlayAgain ? "block" : "none";
+    modalOkayButton.style.display = settings.showOkay ? "block" : "none";
+    modalConfirmButton.style.display = settings.showConfirm ? "block" : "none";
+    modalCancelButton.style.display = settings.showConfirm ? "block" : "none";
     
+    // Assign callbacks to buttons, removing previous listeners to prevent duplicates
+    const confirmHandler = () => {
+        if (settings.onConfirm) settings.onConfirm();
+        hideModal();
+    };
+    const cancelHandler = () => {
+        if (settings.onCancel) settings.onCancel();
+        hideModal();
+    };
+
+    modalConfirmButton.removeEventListener('click', modalConfirmButton._geminiConfirmHandler);
+    modalCancelButton.removeEventListener('click', modalCancelButton._geminiCancelHandler);
+
+    modalConfirmButton.addEventListener('click', confirmHandler);
+    modalCancelButton.addEventListener('click', cancelHandler);
+    
+    // Store handlers for later removal
+    modalConfirmButton._geminiConfirmHandler = confirmHandler;
+    modalCancelButton._geminiCancelHandler = cancelHandler;
+
     modalContainer.style.display = "flex";
     // Add a small delay before adding the class to ensure the display change is registered
     setTimeout(() => {
         modalContainer.classList.add("modal-show");
         // Allow dismissal after a minimum display time
         setTimeout(() => {
-            state.canDismissModal = true;
+            state.canDismissModal = settings.canDismiss;
         }, 1000); // 1 second delay
     }, 10);
 }
@@ -500,23 +531,8 @@ function resetGame() { // SIMPLIFIED resetGame
 document.getElementById("play-again-button").addEventListener("click", resetGame);
 document.getElementById("modal-okay-button").addEventListener("click", hideModal);
 
-document.getElementById("modal-confirm-button").addEventListener("click", () => {
-    if (onConfirmCallback) {
-        onConfirmCallback();
-        onConfirmCallback = null; // Clear the callback after use
-    }
-    hideModal(); // Dismiss the modal after confirmation
-});
-document.getElementById("modal-cancel-button").addEventListener("click", () => {
-    hideModal();
-    onConfirmCallback = null; // Clear the callback if canceled
 
-    // Revert the difficulty dropdown to the current game's difficulty
-    const difficultySelect = document.getElementById("difficulty");
-    if (difficultySelect) {
-        difficultySelect.value = state.selectedDifficulty;
-    }
-});
+
 
 document.getElementById("clear-history-button").addEventListener("click", () => {
     showConfirmationModal("Are you sure you want to clear your game history? This action cannot be undone.", clearGameHistory);
@@ -657,11 +673,21 @@ function clearGameHistory() {
     hideModal(); // Hide the confirmation modal
 }
 
-let onConfirmCallback = null; // Global variable to store the callback
 
-function showConfirmationModal(message, callback) {
-    onConfirmCallback = callback;
-    showModal(message, false, false, true); // No Play Again, No Okay, Show Confirm buttons
+
+function showConfirmationModal(message, onConfirmCallback) {
+    showModal({
+        message: message,
+        showConfirm: true,
+        onConfirm: onConfirmCallback,
+        onCancel: () => {
+            // Revert the difficulty dropdown to the current game's difficulty
+            const difficultySelect = document.getElementById("difficulty");
+            if (difficultySelect) {
+                difficultySelect.value = state.selectedDifficulty;
+            }
+        }
+    });
 }
 
 startup();
