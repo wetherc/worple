@@ -55,6 +55,7 @@ let state = {
     currentRow: 0,
     currentCol: 0,
     selectedDifficulty: 1, // Default difficulty to "Most Words"
+    canDismissModal: false, // New flag to control modal dismissal
 };
 
 async function startup() {
@@ -332,10 +333,15 @@ function showModal(message, showPlayAgainButton = true, showOkayButton = false) 
     // Add a small delay before adding the class to ensure the display change is registered
     setTimeout(() => {
         modalContainer.classList.add("modal-show");
+        // Allow dismissal after a minimum display time
+        setTimeout(() => {
+            state.canDismissModal = true;
+        }, 1000); // 1 second delay
     }, 10);
 }
 
 function hideModal() {
+    state.canDismissModal = false; // Prevent dismissal while hiding
     const modalContainer = document.getElementById("modal-container");
     modalContainer.classList.remove("modal-show");
     // Wait for the transition to finish before setting display to none
@@ -349,17 +355,17 @@ function registerModalDismissalEvents() {
     const modalContainer = document.getElementById("modal-container");
     const modal = document.getElementById("modal");
 
-    // Dismissal by Escape key
+    // Dismissal by Escape/Enter key
     document.addEventListener("keydown", (e) => {
         const playAgainButton = document.getElementById("play-again-button");
-        if ((e.key === "Escape" || e.key === "Enter") && modalContainer.style.display === "flex" && playAgainButton.style.display !== "none") {
+        if ((e.key === "Escape" || e.key === "Enter") && modalContainer.style.display === "flex" && playAgainButton.style.display !== "none" && state.canDismissModal) {
             hideModal();
         }
     });
 
     // Dismissal by clicking outside the modal content
     modalContainer.addEventListener("click", (e) => {
-        if (e.target === modalContainer) {
+        if (e.target === modalContainer && state.canDismissModal) {
             hideModal();
         }
     });
