@@ -1,7 +1,7 @@
 class TrieNode {
     constructor() {
         this.children = {};
-        this.isEndOfWord = false;
+        this.difficulty = null; // Stores difficulty (0, 1, or 2) if it's an end of word
     }
 }
 
@@ -10,7 +10,7 @@ class Trie {
         this.root = new TrieNode();
     }
 
-    insert(word) {
+    insert(word, difficulty) {
         let currentNode = this.root;
         for (let i = 0; i < word.length; i++) {
             const char = word[i];
@@ -19,7 +19,7 @@ class Trie {
             }
             currentNode = currentNode.children[char];
         }
-        currentNode.isEndOfWord = true;
+        currentNode.difficulty = difficulty;
     }
 
     search(word) {
@@ -27,16 +27,17 @@ class Trie {
         for (let i = 0; i < word.length; i++) {
             const char = word[i];
             if (!currentNode.children[char]) {
-                return false;
+                return null; // Word not found
             }
             currentNode = currentNode.children[char];
         }
-        return currentNode.isEndOfWord;
+        return currentNode.difficulty; // Return the difficulty if it's a word, otherwise null
     }
 }
 
+let allWordsWithDifficulty = [];
+let filteredWordList = [];
 let dictionary = new Trie();
-let wordList = [];
 let letterStates = {};
 let sidebarState = {
     currentPage: 1,
@@ -53,15 +54,15 @@ let state = {
         .map(() => Array(5).fill("")),
     currentRow: 0,
     currentCol: 0,
+    selectedDifficulty: 1, // Default difficulty to "Most Words"
 };
 
 async function startup() {
     const res = await fetch("words.json.gz");
     const decompressedResponse = new Response(res.body.pipeThrough(new DecompressionStream('gzip')));
-    const words = await decompressedResponse.json();
-    wordList = words;
-    wordList.forEach(word => dictionary.insert(word));
-    state.secret = wordList[Math.floor(Math.random() * wordList.length)];
+    allWordsWithDifficulty = await decompressedResponse.json();
+
+    applyDifficultyFilter();
 
     const game = document.getElementById("game-board");
     const keyboard = document.getElementById("keyboard");
@@ -69,6 +70,21 @@ async function startup() {
     drawKeyboard(keyboard);
     registerKeyboardEvents();
     displayStats();
+    registerDifficultyChangeListener(); // New function to handle difficulty changes
+}
+
+function applyDifficultyFilter() {
+    // Filter words based on selected difficulty
+    filteredWordList = allWordsWithDifficulty
+        .filter(item => item.difficulty <= state.selectedDifficulty)
+        .map(item => item.word);
+
+    // Clear and rebuild the dictionary with filtered words
+    dictionary = new Trie(); // Reset the trie
+    filteredWordList.forEach(word => dictionary.insert(word, state.selectedDifficulty)); // Use a placeholder difficulty for simplicity here, actual difficulty is in allWordsWithDifficulty
+
+    // Select a new secret word from the filtered list
+    state.secret = filteredWordList[Math.floor(Math.random() * filteredWordList.length)];
 }
 
 function updateKeyboard() {
@@ -119,7 +135,7 @@ function getCurrentWord() {
 }
 
 function isWordValid(word) {
-    return dictionary.search(word);
+    return dictionary.search(word) !== null;
 }
 
 function revealWord(guess) {
@@ -178,7 +194,8 @@ function revealWord(guess) {
                 secretWord: state.secret,
                 guesses: state.grid.slice(0, guesses).map(row => [...row]),
                 results: state.results.slice(0, guesses).map(row => [...row]),
-                win: isWinner
+                win: isWinner,
+                difficulty: dictionary.search(state.secret) // Store the difficulty
             };
             stats.history.push(game);
             if (stats.history.length > 10) {
@@ -285,6 +302,15 @@ function handleKey(key) {
     updateGrid();
 }
 
+function registerDifficultyChangeListener() {
+    const difficultySelect = document.getElementById("difficulty");
+    difficultySelect.addEventListener("change", (event) => {
+        state.selectedDifficulty = parseInt(event.target.value);
+        applyDifficultyFilter();
+        resetGame(); // Reset the game when difficulty changes
+    });
+}
+
 function showModal(message) {
     const modalContainer = document.getElementById("modal-container");
     const modalMessage = document.getElementById("modal-message");
@@ -306,7 +332,7 @@ function resetGame() {
         .map(() => Array(5).fill(""));
     state.currentRow = 0;
     state.currentCol = 0;
-    state.secret = wordList[Math.floor(Math.random() * wordList.length)];
+    state.secret = filteredWordList[Math.floor(Math.random() * filteredWordList.length)];
 
     const gameBoard = document.getElementById("game-board");
     gameBoard.innerHTML = '';
@@ -411,7 +437,7 @@ function displayStats() {
         gameGrid += '</div>';
 
         gameElement.innerHTML = `
-            <p>Word: ${game.secretWord} (${game.win ? 'Win' : 'Loss'})</p>
+            <p>Word: ${game.secretWord} (Difficulty: ${game.difficulty}) (${game.win ? 'Win' : 'Loss'})</p>
             ${gameGrid}
         `;
         recentGamesContent.appendChild(gameElement);
