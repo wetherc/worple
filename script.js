@@ -745,6 +745,8 @@ function displayStats() {
     const nextButton = document.getElementById("next-page-button");
     prevButton.disabled = state.sidebar.currentPage === 1;
     nextButton.disabled = state.sidebar.currentPage === totalPages;
+
+    document.getElementById("sidebar").classList.remove("loading");
 }
 
 

@@ -380,6 +380,16 @@ h1 {
     visibility: visible;
 }
 
+#sidebar.loading #stats-content,
+#sidebar.loading #recent-games-content {
+    opacity: 0;
+}
+
+#stats-content,
+#recent-games-content {
+    transition: opacity 0.5s ease-in-out;
+}
+
 .github-link {
     position: absolute;
     top: 0;
