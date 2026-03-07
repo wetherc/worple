@@ -478,6 +478,11 @@ h1 {
         margin-top: 20px; /* Add space above sidebar */
     }
 
+    #stats-content,
+    #recent-games-content {
+        min-height: 150px;
+    }
+
     h1 {
         font-size: 2rem; /* Smaller heading for mobile */
     }
