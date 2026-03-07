@@ -51,7 +51,7 @@ h1 {
 }
 
 .key {
-    background-color: #818384;
+    background-color: #6a6c6d;
     color: white;
     border: none;
     padding: 15px 10px;
@@ -143,7 +143,7 @@ h1 {
 }
 
 .modal-button {
-    background-color: #818384; /* A neutral color, similar to keyboard keys */
+    background-color: #6a6c6d; /* A neutral color, similar to keyboard keys */
     color: white;
     border: none;
     padding: 10px 20px;
@@ -154,7 +154,7 @@ h1 {
 }
 
 .modal-button:hover {
-    background-color: #929394;
+    background-color: #7a7c7d;
 }
 
 #modal-buttons-container {
@@ -218,7 +218,7 @@ h1 {
 
 .stat-label {
     font-size: 0.9rem;
-    color: #818384;
+    color: #6a6c6d;
 }
 
 .histogram-container {
@@ -285,7 +285,7 @@ h1 {
 }
 
 #pagination-controls button {
-    background-color: #818384;
+    background-color: #6a6c6d;
     color: white;
     border: none;
     padding: 5px 10px;
@@ -396,8 +396,8 @@ h1 {
 
 .github-link svg {
     position: absolute;
-    top: 5px;
-    right: 5px;
+    top: 10px;
+    right: 10px;
     width: 50px;
     height: 50px;
     fill: #121213;
@@ -412,12 +412,12 @@ h1 {
     right: 0;
     border-width: 45px;
     border-style: solid;
-    border-color: #818384 #818384 transparent transparent;
+    border-color: #6a6c6d #6a6c6d transparent transparent;
     transition: border-color 0.2s;
 }
 
 .github-link a:hover::before {
-    border-color: #929394 #929394 transparent transparent;
+    border-color: #7a7c7d #7a7c7d transparent transparent;
 }
 
 .github-link a:hover svg {

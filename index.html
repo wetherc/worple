@@ -3,11 +3,13 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="description" content="A simple, lightweight clone of the popular word game Wordle, built with vanilla JavaScript. Track your stats and play without any ads or sign-ups." />
         <title>Worple</title>
         <link rel="stylesheet" href="style.css" />
+        <link rel="preload" href="words.json.gz" as="fetch" crossorigin />
     </head>
     <body>
-        <div class="main-container">
+        <main class="main-container">
             <div class="game-container">
                 <div class="difficulty-selection">
                     <div class="difficulty-controls">
@@ -48,7 +50,7 @@
                     Clear History
                 </button>
             </div>
-        </div>
+        </main>
         <div id="modal-container">
             <div id="modal">
                 <div id="modal-message"></div>
@@ -67,12 +69,13 @@
             </div>
         </div>
         <div id="temporary-message-container"></div>
-        <script src="script.min.js"></script>
+        <script src="script.min.js" defer></script>
         <div class="github-link">
             <a
                 href="https://github.com/wetherc/worple"
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="View source on GitHub"
             >
                 <svg
                     height="32"
